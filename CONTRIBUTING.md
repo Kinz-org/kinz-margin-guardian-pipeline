@@ -3,7 +3,7 @@
 ## Development setup
 
 ```bash
-git clone https://github.com/nassim0014/kinz-margin-guardian-pipeline.git
+git clone https://github.com/Kinz-org/kinz-margin-guardian-pipeline.git
 cd kinz-margin-guardian-pipeline
 python3 -m venv .venv
 source .venv/bin/activate

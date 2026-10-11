@@ -157,7 +157,7 @@ kinz-margin-guardian-pipeline/
 ### One-command spin-up
 
 ```bash
-git clone https://github.com/nassim0014/kinz-margin-guardian-pipeline.git
+git clone https://github.com/Kinz-org/kinz-margin-guardian-pipeline.git
 cd kinz-margin-guardian-pipeline
 cp .env.example .env
 # Edit .env with your Slack webhook URL + JWT secret

@@ -16,4 +16,4 @@ pandas>=2.0
 # BuildKit secret named ASTK_PAT (a GitHub token) - see api/Dockerfile and
 # docker-compose.yml. Non-Docker installs need git credentials for the private
 # repo on PATH, or astk already importable (e.g. on PYTHONPATH).
-analytics-service-toolkit @ git+https://github.com/nassim0014/analytics-service-toolkit@main
+analytics-service-toolkit @ git+https://github.com/Kinz-org/analytics-service-toolkit@main
