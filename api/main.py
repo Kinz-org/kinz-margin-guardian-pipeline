@@ -10,10 +10,10 @@ from slowapi import Limiter
 from slowapi.util import get_remote_address
 from slowapi.middleware import SlowAPIMiddleware
 
-from astk.db import healthcheck
-
 from api.auth import create_access_token, authenticate_user
-from api.database import engine
+# healthcheck comes from astk.db when installed, else from api.database's
+# SQLAlchemy-only fallback (see that module's docstring).
+from api.database import engine, healthcheck
 from api.models import Token, TokenRequest
 from api.routes import products, thresholds, alerts
 
