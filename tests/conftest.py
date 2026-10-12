@@ -105,11 +105,16 @@ def client(db_session):
     collect the non-API tests. The API tests use importorskip to
     skip gracefully if fastapi is not available.
     """
-    try:
-        from api.database import get_db
-        from api.main import app
-    except ImportError:
-        pytest.skip("fastapi not installed - skipping API tests")
+    # Skip only when the API's own third-party deps are genuinely missing.
+    # Any other ImportError from the api package (e.g. a hard dependency on the
+    # private astk toolkit, which once silently skipped every API test in CI
+    # under a "fastapi not installed" message) must fail loudly instead.
+    pytest.importorskip("fastapi")
+    pytest.importorskip("httpx")
+    pytest.importorskip("jwt")
+    pytest.importorskip("slowapi")
+    from api.database import get_db
+    from api.main import app
     from fastapi.testclient import TestClient
 
     def _override_get_db():
