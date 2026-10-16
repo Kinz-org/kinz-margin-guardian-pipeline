@@ -1,8 +1,6 @@
 """FastAPI entrypoint for the Kinz Margin Guardian backend."""
 from __future__ import annotations
 
-from datetime import timedelta
-
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -71,10 +69,9 @@ def login(req: TokenRequest):
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",
         )
-    token = create_access_token(
-        data={"sub": req.email, "role": "admin"},
-        expires_delta=timedelta(minutes=60),
-    )
+    # No expires_delta: create_access_token falls back to JWT_EXPIRE_MINUTES,
+    # so the lifetime set in .env is the one tokens actually get.
+    token = create_access_token(data={"sub": req.email, "role": "admin"})
     return Token(access_token=token)
 
 

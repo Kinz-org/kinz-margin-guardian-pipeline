@@ -10,6 +10,7 @@ available, the entire file skips gracefully rather than failing collection.
 """
 from __future__ import annotations
 
+import time
 from unittest.mock import patch
 
 import pytest
@@ -53,6 +54,25 @@ class TestAuth:
         })
         assert resp.status_code == 200
         assert "access_token" in resp.json()
+
+    def test_login_token_lifetime_follows_jwt_expire_minutes(self, client, monkeypatch):
+        """Regression: /auth/token hard-coded a 60-minute lifetime, so
+        JWT_EXPIRE_MINUTES in .env had no effect on issued tokens."""
+        from api import auth
+        from src.config import JWT_SECRET, JWT_ALGORITHM
+
+        monkeypatch.setattr(auth, "JWT_EXPIRE_MINUTES", 15)
+        resp = client.post("/auth/token", json={
+            "email": "test@kinzoils.com",
+            "password": "testpass",
+        })
+        assert resp.status_code == 200
+        claims = jwt.decode(
+            resp.json()["access_token"], JWT_SECRET, algorithms=[JWT_ALGORITHM],
+            options={"verify_iat": False},
+        )
+        lifetime_min = (claims["exp"] - time.time()) / 60
+        assert 14 < lifetime_min <= 15
 
     def test_login_with_invalid_credentials(self, client):
         resp = client.post("/auth/token", json={

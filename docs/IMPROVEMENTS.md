@@ -16,7 +16,8 @@ found in the code are listed.
   skips in `tests/test_api.py`; `tests/test_api_without_astk.py` imports the app
   with astk blocked.
 
-- [ ] **`POST /auth/token` ignores `JWT_EXPIRE_MINUTES`.**
+- [x] **`POST /auth/token` ignores `JWT_EXPIRE_MINUTES`.** (done 2026-10-16: `login()` no longer
+  passes `expires_delta`; covered by `tests/test_api.py::TestAuth::test_login_token_lifetime_follows_jwt_expire_minutes`)
   `api/main.py`'s `login()` passes `expires_delta=timedelta(minutes=60)` to
   `create_access_token`, so the token lifetime is always 60 minutes. The setting
   is defined in `src/config.py`, documented in `.env.example`, and used as the
