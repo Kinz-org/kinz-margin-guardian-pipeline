@@ -1,8 +1,6 @@
 """FastAPI entrypoint for the Kinz Margin Guardian backend."""
 from __future__ import annotations
 
-from datetime import timedelta
-
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -73,7 +71,6 @@ def login(req: TokenRequest):
         )
     token = create_access_token(
         data={"sub": req.email, "role": "admin"},
-        expires_delta=timedelta(minutes=60),
     )
     return Token(access_token=token)
 

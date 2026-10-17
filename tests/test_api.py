@@ -54,6 +54,20 @@ class TestAuth:
         assert resp.status_code == 200
         assert "access_token" in resp.json()
 
+    def test_login_token_lifetime_follows_jwt_expire_minutes(self, client):
+        from datetime import datetime, timezone
+
+        with patch("api.auth.JWT_EXPIRE_MINUTES", 5):
+            resp = client.post("/auth/token", json={
+                "email": "test@kinzoils.com",
+                "password": "testpass",
+            })
+        claims = jwt.decode(
+            resp.json()["access_token"], options={"verify_signature": False}
+        )
+        remaining = claims["exp"] - datetime.now(timezone.utc).timestamp()
+        assert 4 * 60 < remaining <= 5 * 60
+
     def test_login_with_invalid_credentials(self, client):
         resp = client.post("/auth/token", json={
             "email": "test@kinzoils.com",
