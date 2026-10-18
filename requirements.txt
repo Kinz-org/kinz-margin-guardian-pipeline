@@ -8,8 +8,7 @@ SQLAlchemy>=2.0
 pydantic>=2.5
 
 # Shared toolkit - src/alert_manager delegates Slack delivery to astk.alerts
-# (retry/backoff, never-raises). Private repo: the build environment needs
-# credentials (a PAT or SSH key) to install it.
+# (retry/backoff, never-raises). Public repo in Kinz-org, installed from main.
 analytics-service-toolkit @ git+https://github.com/Kinz-org/analytics-service-toolkit@main
 
 # ---- Data ----
@@ -18,4 +17,5 @@ numpy>=1.24
 
 # ---- Testing ----
 pytest>=8.0
+ruff>=0.4
 httpx>=0.27
