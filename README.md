@@ -127,7 +127,11 @@ kinz-margin-guardian-pipeline/
 ├── analytics/
 │   └── margin_risk_analysis.ipynb
 │
+├── docs/
+│   └── IMPROVEMENTS.md
+│
 ├── scripts/
+│   ├── demo.py
 │   ├── init_db.sql
 │   ├── seed_products.py
 │   └── simulate_competitor_prices.py
@@ -139,8 +143,15 @@ kinz-margin-guardian-pipeline/
 │   └── config.py
 │
 ├── tests/
+│   ├── conftest.py
+│   ├── test_alert_manager.py
+│   ├── test_api.py
+│   ├── test_api_without_astk.py
+│   ├── test_dag_logic.py
+│   ├── test_dashboard_analysis.py
+│   ├── test_demo.py
 │   ├── test_margin_engine.py
-│   └── test_alert_manager.py
+│   └── test_readme_claims.py
 │
 └── .streamlit/config.toml
 ```
@@ -175,9 +186,23 @@ docker compose up --build -d
 
 ### Initialize the database
 
+Postgres creates the schema itself on first start: `docker-compose.yml` mounts
+`scripts/init_db.sql` as `/docker-entrypoint-initdb.d/01_init_db.sql`, which runs
+once on an empty volume. Then seed the products:
+
 ```bash
-docker compose exec postgres psql -U kinz_guardian -d margin_guardian -f /docker-entrypoint-initdb.d/init_db.sql
 docker compose exec api python scripts/seed_products.py
+```
+
+### Try it without Docker
+
+`scripts/demo.py` runs the margin and alert logic on five synthetic products. It
+needs no Docker, Postgres, Airflow or secrets:
+
+```bash
+python3 -m venv .venv && .venv/bin/pip install pandas numpy pydantic SQLAlchemy
+.venv/bin/pip install -e .
+.venv/bin/python scripts/demo.py
 ```
 
 ---
@@ -230,7 +255,7 @@ If margin < threshold → trigger alert
 | GET | `/thresholds` | JWT | List alert thresholds per product |
 | PUT | `/thresholds/{product_id}` | JWT | Update threshold for a product |
 | GET | `/alerts` | JWT | View alert history |
-| GET | `/margins/latest` | JWT | Get latest margins for all products |
+| GET | `/products/margins/latest` | JWT | Get latest margins for all products |
 
 ---
 

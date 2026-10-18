@@ -16,7 +16,7 @@ pip install fastapi httpx PyJWT slowapi
 ## Running tests
 
 ```bash
-pytest tests/ -v          # expect ~54 tests
+pytest tests/ -v          # expect ~89 tests
 ruff check src/ tests/     # expect clean
 make check                 # full local CI gate (test + ruff)
 ```
