@@ -93,21 +93,25 @@ flowchart TD
 ```
 kinz-margin-guardian-pipeline/
 ├── README.md
+├── CONTRIBUTING.md
 ├── SECURITY.md
 ├── LICENSE
 ├── .env.example
 ├── .gitignore
 ├── docker-compose.yml
 ├── Makefile
-├── requirements.txt
+├── requirements.txt            # shared deps + pytest/ruff (used by make setup)
+├── requirements-api.txt
+├── requirements-dashboard.txt
+├── requirements-airflow.txt
 │
 ├── .github/workflows/ci.yml
 │
 ├── airflow/
+│   ├── Dockerfile
 │   ├── dags/
 │   │   └── margin_guardian_dag.py
-│   └── plugins/
-│       └── margin_operators.py
+│   └── plugins/                 # empty (.gitkeep), mounted into the Airflow containers
 │
 ├── api/
 │   ├── main.py
@@ -140,6 +144,7 @@ kinz-margin-guardian-pipeline/
 │   ├── __init__.py
 │   ├── margin_engine.py
 │   ├── alert_manager.py
+│   ├── dag_logic.py
 │   └── config.py
 │
 ├── tests/
