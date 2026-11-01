@@ -18,10 +18,13 @@ You will receive a response within 48 hours.
 
 ## Security Measures
 
-- API endpoints use JWT authentication with role-based access control (RBAC)
-- Rate limiting via `slowapi` on API routes
-- Password hashing with bcrypt (12 rounds)
-- Audit logging on every mutation
+- API endpoints use JWT authentication (HS256, expiry from `JWT_EXPIRE_MINUTES`).
+  There is a single API user from `API_USER`/`API_PASSWORD`; every token carries
+  `role: admin` and no route checks roles yet.
+- Rate limiting via `slowapi` on API routes (default 120 requests/minute)
+- The API password is compared to the `API_PASSWORD` env var; it is not hashed or
+  stored in the database.
+- No audit log of mutations yet.
 - PostgreSQL with connection pooling
 - Docker container isolation
 

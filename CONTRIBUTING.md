@@ -18,8 +18,14 @@ pip install fastapi httpx PyJWT slowapi
 ```bash
 pytest tests/ -v          # expect ~89 tests
 ruff check src/ tests/     # expect clean
-make check                 # full local CI gate (test + ruff)
+make check                 # test + ruff in its own .venv
 ```
+
+`make check` builds `.venv` from `requirements.txt`, which does not include the
+API test deps (`fastapi`, `PyJWT`, `slowapi`). In that venv `tests/test_api.py`
+and `tests/test_api_without_astk.py` are skipped, so it runs fewer tests than CI.
+Install the API deps into `.venv` (`.venv/bin/pip install fastapi httpx PyJWT slowapi`)
+before `make check` to match CI.
 
 ## Full stack via Docker
 
@@ -39,6 +45,6 @@ CI runs on push + pull_request to main:
 
 1. Create a branch from `main`.
 2. Make your changes. Keep diffs small (≤400 lines).
-3. Run `make check` locally.
+3. Run `make check` locally (with the API deps installed, see above).
 4. Open a PR with a clear description.
 5. Squash-merge when CI is green.
