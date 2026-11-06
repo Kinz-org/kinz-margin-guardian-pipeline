@@ -28,6 +28,24 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 
+DEFAULT_CORS_ALLOW_ORIGINS = "http://localhost:8501"
+
+
+def parse_cors_origins(raw: str | None) -> list[str]:
+    """Turn the comma-separated ``CORS_ALLOW_ORIGINS`` value into an origin list.
+
+    Blank entries are dropped and so is ``"*"``: the API is served with
+    ``allow_credentials=True``, and with a wildcard in the list Starlette echoes
+    back whatever origin asks, which lets any website make credentialed calls to
+    the API from a visitor's browser. Origins must be listed explicitly. An empty
+    result means no cross-origin browser access at all (same-origin and
+    server-side callers are unaffected).
+    """
+    if raw is None:
+        raw = DEFAULT_CORS_ALLOW_ORIGINS
+    return [o.strip() for o in raw.split(",") if o.strip() and o.strip() != "*"]
+
+
 try:
     from astk.settings import BaseServiceSettings, load_settings
 
@@ -61,6 +79,9 @@ try:
         # Data retention
         price_retention_days: int = 90
 
+        # Browser origins allowed to call the API (comma-separated; "*" ignored)
+        cors_allow_origins: str = DEFAULT_CORS_ALLOW_ORIGINS
+
     settings = load_settings(GuardianSettings)
 
     # -----------------------------------------------------------------------
@@ -80,6 +101,8 @@ try:
 
     PRICE_RETENTION_DAYS = settings.price_retention_days
 
+    CORS_ALLOW_ORIGINS = parse_cors_origins(settings.cors_allow_origins)
+
 except ModuleNotFoundError:  # pragma: no cover - exercised only in the lightweight CI env
     settings = None
 
@@ -98,3 +121,5 @@ except ModuleNotFoundError:  # pragma: no cover - exercised only in the lightwei
     B2B_DISCOUNT_FACTOR = float(os.getenv("B2B_DISCOUNT_FACTOR", "0.85"))
 
     PRICE_RETENTION_DAYS = int(os.getenv("PRICE_RETENTION_DAYS", "90"))
+
+    CORS_ALLOW_ORIGINS = parse_cors_origins(os.getenv("CORS_ALLOW_ORIGINS"))
