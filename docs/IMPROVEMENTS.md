@@ -34,13 +34,14 @@ found in the code are listed.
   `"*"`. Check: a TestClient preflight from an unlisted origin gets no
   `access-control-allow-origin` header.
 
-- [ ] **Three margin/retention settings are undocumented in `.env.example`.**
+- [x] **Three margin/retention settings are undocumented in `.env.example`.** (done 2026-11-11)
   `src/config.py` reads `DEFAULT_ALERT_THRESHOLD_PCT` (40.0), `B2B_DISCOUNT_FACTOR`
   (0.85) and `PRICE_RETENTION_DAYS` (90) from the environment in both the astk and
   the fallback branch, but `.env.example` stops at the JWT, Slack, API and Airflow
   variables. These are the main business knobs of the pipeline. Check: every
   `os.getenv` name in `src/config.py` appears in `.env.example` (a small test can
-  enforce it).
+  enforce it). Fixed: a "Margin rules & retention" section in `.env.example`;
+  `tests/test_env_example.py` fails if a setting read in `src/config.py` is missing.
 
 - [ ] **No `.github/dependabot.yml`.**
   `.github/` holds only `ISSUE_TEMPLATE/` and `workflows/ci.yml`, so dependency
