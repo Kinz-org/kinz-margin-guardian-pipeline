@@ -137,12 +137,14 @@ kinz-margin-guardian-pipeline/
 ├── scripts/
 │   ├── demo.py
 │   ├── init_db.sql
+│   ├── price_floor.py
 │   ├── seed_products.py
 │   └── simulate_competitor_prices.py
 │
 ├── src/
 │   ├── __init__.py
 │   ├── margin_engine.py
+│   ├── price_floor.py
 │   ├── alert_manager.py
 │   ├── dag_logic.py
 │   └── config.py
@@ -156,6 +158,7 @@ kinz-margin-guardian-pipeline/
 │   ├── test_dashboard_analysis.py
 │   ├── test_demo.py
 │   ├── test_margin_engine.py
+│   ├── test_price_floor.py
 │   └── test_readme_claims.py
 │
 └── .streamlit/config.toml
@@ -208,6 +211,19 @@ needs no Docker, Postgres, Airflow or secrets:
 python3 -m venv .venv && .venv/bin/pip install pandas numpy pydantic SQLAlchemy
 .venv/bin/pip install -e .
 .venv/bin/python scripts/demo.py
+```
+
+`scripts/price_floor.py` answers the question before the alert: how low can the
+competitor price go before a product alerts? For each product it prints the
+lowest competitor price, to the millime, at which neither the B2C nor the B2B
+margin is below the threshold, and how far today's price sits above or below it.
+The floor is checked against the same engine that raises the alerts, including
+its rounding of margins to two decimals, so the two can't disagree.
+
+```bash
+.venv/bin/python scripts/price_floor.py                # the demo catalogue
+.venv/bin/python scripts/price_floor.py --cogs 30      # one product: 58.819 TND
+.venv/bin/python scripts/price_floor.py --cogs 30 --price 62 --threshold 35
 ```
 
 ---
