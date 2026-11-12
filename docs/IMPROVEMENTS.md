@@ -25,7 +25,7 @@ found in the code are listed.
   `JWT_EXPIRE_MINUTES`). Check: a test that sets a different expiry and decodes
   the `exp` claim of a token from `/auth/token`.
 
-- [ ] **CORS allows any origin with credentials.**
+- [x] **CORS allows any origin with credentials.** (done 2026-11-06)
   `api/main.py` configures `CORSMiddleware(allow_origins=["http://localhost:8501", "*"],
   allow_credentials=True)`. With `"*"` present the localhost entry is meaningless,
   and Starlette echoes back any requesting origin when credentials are allowed, so
@@ -33,6 +33,10 @@ found in the code are listed.
   Fix: read allowed origins from config (defaulting to the dashboard URL) and drop
   `"*"`. Check: a TestClient preflight from an unlisted origin gets no
   `access-control-allow-origin` header.
+  Fixed: `api/main.py` now takes `allow_origins` from `src.config.CORS_ALLOW_ORIGINS`
+  (comma-separated `CORS_ALLOW_ORIGINS` env var, default `http://localhost:8501`,
+  `"*"` always dropped by `parse_cors_origins`), documented in `.env.example`.
+  Covered by `tests/test_cors.py`.
 
 - [ ] **Three margin/retention settings are undocumented in `.env.example`.**
   `src/config.py` reads `DEFAULT_ALERT_THRESHOLD_PCT` (40.0), `B2B_DISCOUNT_FACTOR`
@@ -47,3 +51,19 @@ found in the code are listed.
   updates are never surfaced. The requirements files use `>=` with no pins, so a
   breaking release lands silently on the next install. Check: the file exists and
   covers `pip` (the four `requirements*.txt`) and `github-actions`.
+
+- [ ] **`PUT /thresholds/{id}` and `DELETE /products/{id}` report success for a product that does not exist.**
+  `api/routes/thresholds.py::update_threshold` and `api/routes/products.py::deactivate_product`
+  run their `UPDATE` and return `{"status": "updated"|"deactivated", ...}` with 200
+  without checking that any row matched, so a typo'd id silently "succeeds" and the
+  caller believes a margin threshold was changed when nothing was. `PUT /products/{id}`
+  already returns 404 in that case. Fix: check the result's `rowcount` and raise 404
+  when it is 0. Check: a test that calls both routes on an unknown id and expects 404.
+
+- [ ] **Products created through the API ignore `DEFAULT_ALERT_THRESHOLD_PCT`.**
+  `api/models.py::ProductBase.alert_threshold_pct` defaults to a literal `40.0`, so a
+  `POST /products` without an explicit threshold always stores 40 even when
+  `DEFAULT_ALERT_THRESHOLD_PCT` is set otherwise in `.env`; `src/margin_engine.py`
+  does honour the setting, so the two disagree. Fix: default the field to
+  `src.config.DEFAULT_ALERT_THRESHOLD_PCT`. Check: a test that patches the setting
+  (or reloads the model) and posts a product without a threshold.

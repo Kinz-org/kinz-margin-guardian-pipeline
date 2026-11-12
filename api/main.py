@@ -14,6 +14,7 @@ from api.auth import create_access_token, authenticate_user
 from api.database import engine, healthcheck
 from api.models import Token, TokenRequest
 from api.routes import products, thresholds, alerts
+from src.config import CORS_ALLOW_ORIGINS
 
 app = FastAPI(
     title="Kinz Margin Guardian API",
@@ -26,10 +27,12 @@ limiter = Limiter(key_func=get_remote_address, default_limits=["120/minute"])
 app.state.limiter = limiter
 app.add_middleware(SlowAPIMiddleware)
 
-# CORS (allow Streamlit dashboard)
+# CORS: only the origins listed in CORS_ALLOW_ORIGINS (default: the Streamlit
+# dashboard). Never "*" here: with allow_credentials=True Starlette would echo
+# back any requesting origin, so every website could make credentialed calls.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8501", "*"],
+    allow_origins=CORS_ALLOW_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
