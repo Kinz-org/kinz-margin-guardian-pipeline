@@ -2,7 +2,7 @@
 # Used by src/ modules (margin_engine, alert_manager, config)
 
 # ---- Core ----
-python-dotenv>=1.0
+python-dotenv>=1.2.4
 psycopg[binary]>=3.1
 SQLAlchemy>=2.0
 pydantic>=2.5
