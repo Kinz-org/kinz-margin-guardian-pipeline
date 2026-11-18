@@ -47,11 +47,14 @@ found in the code are listed.
   enforce it). Fixed: a "Margin rules & retention" section in `.env.example`;
   `tests/test_env_example.py` fails if a setting read in `src/config.py` is missing.
 
-- [ ] **No `.github/dependabot.yml`.**
+- [x] **No `.github/dependabot.yml`.** (done 2026-11-18)
   `.github/` holds only `ISSUE_TEMPLATE/` and `workflows/ci.yml`, so dependency
   updates are never surfaced. The requirements files use `>=` with no pins, so a
   breaking release lands silently on the next install. Check: the file exists and
   covers `pip` (the four `requirements*.txt`) and `github-actions`.
+  Fixed: weekly `pip` and `github-actions` updates, minor/patch bumps grouped into
+  one PR per ecosystem. `tests/test_dependabot_config.py` fails if a
+  `requirements*.txt` directory is not covered.
 
 - [ ] **`PUT /thresholds/{id}` and `DELETE /products/{id}` report success for a product that does not exist.**
   `api/routes/thresholds.py::update_threshold` and `api/routes/products.py::deactivate_product`
