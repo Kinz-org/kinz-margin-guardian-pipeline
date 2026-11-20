@@ -1,5 +1,5 @@
 # Streamlit dashboard dependencies
-python-dotenv>=1.0
+python-dotenv>=1.2.4
 psycopg[binary]>=3.1
 psycopg2-binary>=2.9.0
 SQLAlchemy>=2.1.8
