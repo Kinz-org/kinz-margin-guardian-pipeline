@@ -4,7 +4,7 @@
 # ---- Core ----
 python-dotenv>=1.0
 psycopg[binary]>=3.1
-SQLAlchemy>=2.0
+SQLAlchemy>=2.1.8
 pydantic>=2.5
 
 # Shared toolkit - src/alert_manager delegates Slack delivery to astk.alerts
