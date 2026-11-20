@@ -161,6 +161,18 @@ class TestProducts:
         assert resp.status_code == 200
         assert resp.json()["status"] == "deactivated"
 
+    def test_deactivate_nonexistent_product_returns_404(self, client, auth_headers):
+        resp = client.delete("/products/99999", headers=auth_headers)
+        assert resp.status_code == 404
+
+    def test_deactivate_already_inactive_product_still_succeeds(self, client, auth_headers):
+        """Deactivating twice is idempotent: the row exists, so no 404."""
+        pid = client.post("/products", json={
+            "name": "Twice", "cogs_tnd": 10.0,
+        }, headers=auth_headers).json()["id"]
+        assert client.delete(f"/products/{pid}", headers=auth_headers).status_code == 200
+        assert client.delete(f"/products/{pid}", headers=auth_headers).status_code == 200
+
     def test_get_latest_margins_empty(self, client, auth_headers):
         resp = client.get("/products/margins/latest", headers=auth_headers)
         assert resp.status_code == 200
@@ -221,6 +233,18 @@ class TestThresholds:
         resp = client.put(f"/thresholds/{pid}", json={"alert_threshold_pct": 25.0}, headers=auth_headers)
         assert resp.status_code == 200
         assert resp.json()["threshold_pct"] == 25.0
+
+    def test_update_threshold_nonexistent_product_returns_404(self, client, auth_headers):
+        resp = client.put("/thresholds/99999", json={"alert_threshold_pct": 25.0}, headers=auth_headers)
+        assert resp.status_code == 404
+
+    def test_update_threshold_to_same_value_still_succeeds(self, client, auth_headers):
+        """An unchanged value still matches the row, so it must not 404."""
+        pid = client.post("/products", json={
+            "name": "Same Threshold", "cogs_tnd": 10.0, "alert_threshold_pct": 30.0,
+        }, headers=auth_headers).json()["id"]
+        resp = client.put(f"/thresholds/{pid}", json={"alert_threshold_pct": 30.0}, headers=auth_headers)
+        assert resp.status_code == 200
 
 
 # ─── Alerts ─────────────────────────────────────────────────────────

@@ -56,13 +56,17 @@ found in the code are listed.
   one PR per ecosystem. `tests/test_dependabot_config.py` fails if a
   `requirements*.txt` directory is not covered.
 
-- [ ] **`PUT /thresholds/{id}` and `DELETE /products/{id}` report success for a product that does not exist.**
+- [x] **`PUT /thresholds/{id}` and `DELETE /products/{id}` report success for a product that does not exist.** (done 2026-11-20)
   `api/routes/thresholds.py::update_threshold` and `api/routes/products.py::deactivate_product`
   run their `UPDATE` and return `{"status": "updated"|"deactivated", ...}` with 200
   without checking that any row matched, so a typo'd id silently "succeeds" and the
   caller believes a margin threshold was changed when nothing was. `PUT /products/{id}`
   already returns 404 in that case. Fix: check the result's `rowcount` and raise 404
   when it is 0. Check: a test that calls both routes on an unknown id and expects 404.
+  Fixed: both routes check `rowcount` (rows matched, so re-sending the same value or
+  deactivating twice still returns 200), roll back and raise 404 when it is 0.
+  Covered by four tests in `tests/test_api.py` (unknown id -> 404, same-value /
+  repeat deactivation -> 200).
 
 - [ ] **Products created through the API ignore `DEFAULT_ALERT_THRESHOLD_PCT`.**
   `api/models.py::ProductBase.alert_threshold_pct` defaults to a literal `40.0`, so a
@@ -71,3 +75,25 @@ found in the code are listed.
   does honour the setting, so the two disagree. Fix: default the field to
   `src.config.DEFAULT_ALERT_THRESHOLD_PCT`. Check: a test that patches the setting
   (or reloads the model) and posts a product without a threshold.
+
+- [ ] **`GET /products/margins/latest` returns 500 on SQLite whenever there is data, and its test accepts that.**
+  `api/routes/products.py::get_latest_margins` selects `CAST(mh.calc_date AS TEXT)`
+  with no alias. PostgreSQL happens to name that column `calc_date`, but SQLite names
+  it `CAST(mh.calc_date AS TEXT)`, so `MarginResponse` validation fails with
+  "calc_date: Field required" and the route answers 500 (verified with the test
+  SQLite DB). `tests/test_api.py::test_get_latest_margins_with_data` asserts
+  `status_code in (200, 500)`, so the only test of the dashboard's main margin view
+  cannot fail. Fix: alias the column `AS calc_date`. Check: tighten that test to
+  expect 200 and assert `calc_date == "2026-01-01"` and the margin values.
+
+- [ ] **The API starts with publicly known credentials when the env vars are unset.**
+  `src/config.py` defaults `JWT_SECRET` to `dev-only-change-me-in-production-please`
+  (both branches), `api/auth.py` defaults `API_PASSWORD` to `change_me_in_prod`, and
+  `docker-compose.yml` repeats both as `${VAR:-default}` fallbacks. A deployment that
+  forgets either variable boots normally, and anyone who has read this repo can log in
+  or forge an admin JWT signed with the default secret. `authenticate_user` also
+  compares the password with `==` rather than `hmac.compare_digest`. Fix: refuse to
+  start (or refuse `/auth/token` and all token checks) when the secret or password
+  is still the shipped default, unless an explicit dev/test flag is set; use
+  `hmac.compare_digest`. Check: a test that imports the app with the defaults and no
+  dev flag and expects the startup/login failure.
