@@ -1,7 +1,7 @@
 """Alert threshold configuration routes."""
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
@@ -24,8 +24,13 @@ def list_thresholds(db: Session = Depends(get_db), user=Depends(get_current_user
 @router.put("/{product_id}")
 def update_threshold(product_id: int, thr: ThresholdUpdate, db: Session = Depends(get_db), user=Depends(get_current_user)):
     """Update the alert threshold for a specific product."""
-    db.execute(text(
+    result = db.execute(text(
         "UPDATE products SET alert_threshold_pct = :thr WHERE id = :pid"
     ), {"thr": thr.alert_threshold_pct, "pid": product_id})
+    # rowcount is the number of rows MATCHED by the WHERE clause (SQLite and
+    # PostgreSQL), so 0 means the id does not exist, not "value unchanged".
+    if result.rowcount == 0:
+        db.rollback()
+        raise HTTPException(status_code=404, detail="Product not found")
     db.commit()
     return {"status": "updated", "product_id": product_id, "threshold_pct": thr.alert_threshold_pct}

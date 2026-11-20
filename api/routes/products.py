@@ -84,8 +84,12 @@ def update_product(product_id: int, prod: ProductUpdate, db: Session = Depends(g
 @router.delete("/{product_id}")
 def deactivate_product(product_id: int, db: Session = Depends(get_db), user=Depends(get_current_user)):
     """Deactivate a product (soft delete)."""
-    db.execute(text("UPDATE products SET active = false, updated_at = :now WHERE id = :pid"),
-               {"pid": product_id, "now": _naive_utcnow()})
+    result = db.execute(text("UPDATE products SET active = false, updated_at = :now WHERE id = :pid"),
+                        {"pid": product_id, "now": _naive_utcnow()})
+    # rowcount counts rows matched by the WHERE clause, so 0 means unknown id.
+    if result.rowcount == 0:
+        db.rollback()
+        raise HTTPException(status_code=404, detail="Product not found")
     db.commit()
     return {"status": "deactivated", "product_id": product_id}
 
