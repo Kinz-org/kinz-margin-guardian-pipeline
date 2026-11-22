@@ -105,7 +105,9 @@ kinz-margin-guardian-pipeline/
 ├── requirements-dashboard.txt
 ├── requirements-airflow.txt
 │
-├── .github/workflows/ci.yml
+├── .github/
+│   ├── dependabot.yml
+│   └── workflows/ci.yml
 │
 ├── airflow/
 │   ├── Dockerfile
@@ -154,9 +156,12 @@ kinz-margin-guardian-pipeline/
 │   ├── test_alert_manager.py
 │   ├── test_api.py
 │   ├── test_api_without_astk.py
+│   ├── test_cors.py
 │   ├── test_dag_logic.py
 │   ├── test_dashboard_analysis.py
 │   ├── test_demo.py
+│   ├── test_dependabot_config.py
+│   ├── test_env_example.py
 │   ├── test_margin_engine.py
 │   ├── test_price_floor.py
 │   └── test_readme_claims.py
@@ -278,6 +283,10 @@ If margin < threshold → trigger alert
 | GET | `/alerts` | JWT | View alert history |
 | GET | `/products/margins/latest` | JWT | Get latest margins for all products |
 
+`PUT /thresholds/{product_id}`, `PUT /products/{id}` and `DELETE /products/{id}` return
+`404` for an unknown id. Browser origins allowed to call the API are set with the
+comma-separated `CORS_ALLOW_ORIGINS` env var (default `http://localhost:8501`; `*` is ignored).
+
 ---
 
 ## Streamlit Dashboard
@@ -315,7 +324,7 @@ See [SECURITY.md](SECURITY.md) for the full security policy.
 
 Key controls:
 - Database credentials in `.env` (gitignored)
-- JWT auth on all API endpoints (60-min expiry, HS256)
+- JWT auth on every API endpoint except `/`, `/health` and `/auth/token` (60-min expiry, HS256)
 - Slack webhook URL stored as env var, never logged
 - Postgres not exposed to host (internal Docker network)
 - SQLAlchemy ORM (parameterized queries - no SQL injection)
