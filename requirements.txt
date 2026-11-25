@@ -12,7 +12,7 @@ pydantic>=2.5
 analytics-service-toolkit @ git+https://github.com/Kinz-org/analytics-service-toolkit@main
 
 # ---- Data ----
-pandas>=2.0
+pandas>=3.1.1
 numpy>=1.24
 
 # ---- Testing ----
