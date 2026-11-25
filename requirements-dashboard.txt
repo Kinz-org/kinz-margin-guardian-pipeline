@@ -5,7 +5,7 @@ psycopg2-binary>=2.9.0
 SQLAlchemy>=2.1.8
 streamlit>=1.30
 plotly>=5.18
-pandas>=2.0
+pandas>=3.1.1
 numpy>=1.24
 
 # Shared toolkit - dashboard/app.py's get_engine() uses astk.db.make_engine,
