@@ -98,7 +98,7 @@ def deactivate_product(product_id: int, db: Session = Depends(get_db), user=Depe
 def get_latest_margins(db: Session = Depends(get_db), user=Depends(get_current_user)):
     """Get the latest margins for all products."""
     result = db.execute(text("""
-        SELECT mh.product_id, p.name as product_name, CAST(mh.calc_date AS TEXT),
+        SELECT mh.product_id, p.name as product_name, CAST(mh.calc_date AS TEXT) AS calc_date,
                mh.b2c_margin_pct, mh.b2b_margin_pct, mh.b2c_price_tnd,
                mh.b2b_price_tnd, mh.cogs_tnd
         FROM margin_history mh
