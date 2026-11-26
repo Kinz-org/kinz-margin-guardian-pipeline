@@ -76,7 +76,7 @@ found in the code are listed.
   `src.config.DEFAULT_ALERT_THRESHOLD_PCT`. Check: a test that patches the setting
   (or reloads the model) and posts a product without a threshold.
 
-- [ ] **`GET /products/margins/latest` returns 500 on SQLite whenever there is data, and its test accepts that.**
+- [x] **`GET /products/margins/latest` returns 500 on SQLite whenever there is data, and its test accepts that.** (done 2026-11-26)
   `api/routes/products.py::get_latest_margins` selects `CAST(mh.calc_date AS TEXT)`
   with no alias. PostgreSQL happens to name that column `calc_date`, but SQLite names
   it `CAST(mh.calc_date AS TEXT)`, so `MarginResponse` validation fails with
@@ -85,6 +85,9 @@ found in the code are listed.
   `status_code in (200, 500)`, so the only test of the dashboard's main margin view
   cannot fail. Fix: alias the column `AS calc_date`. Check: tighten that test to
   expect 200 and assert `calc_date == "2026-01-01"` and the margin values.
+  Fixed: the column is aliased `AS calc_date`. The test now expects 200 and the
+  exact row; it also takes the product id from the insert instead of assuming
+  `1`, which was never true once earlier tests had used the `products` sequence.
 
 - [ ] **The API starts with publicly known credentials when the env vars are unset.**
   `src/config.py` defaults `JWT_SECRET` to `dev-only-change-me-in-production-please`

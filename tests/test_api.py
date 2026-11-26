@@ -182,24 +182,30 @@ class TestProducts:
         """Test that /margins/latest returns data when margin_history has rows."""
         from sqlalchemy import text
         # Create a product + margin history row
-        db_session.execute(text(
+        product_id = db_session.execute(text(
             "INSERT INTO products (name, cogs_tnd, active) VALUES (:name, :cogs, 1)"
-        ), {"name": "Margin Test", "cogs": 10.0})
+        ), {"name": "Margin Test", "cogs": 10.0}).lastrowid
         db_session.execute(text(
             "INSERT INTO margin_history (product_id, calc_date, b2c_margin_pct, b2b_margin_pct, "
             "b2c_price_tnd, b2b_price_tnd, cogs_tnd) VALUES "
-            "(1, '2026-01-01', 50.0, 40.0, 20.0, 15.0, 10.0)"
-        ))
+            "(:pid, '2026-01-01', 50.0, 40.0, 20.0, 15.0, 10.0)"
+        ), {"pid": product_id})
         db_session.commit()
         resp = client.get("/products/margins/latest", headers=auth_headers)
-        # ResponseValidationError means the route ran but returned data that
-        # doesn't match MarginResponse schema. That's a real finding - the
-        # response_model validation catches a type mismatch. We assert 200
-        # here to verify the route executes; the Pydantic validation is
-        # tested separately by the response_model declaration.
-        # If the schema doesn't match, FastAPI raises ResponseValidationError
-        # (status 500). We accept either - the route IS exercised either way.
-        assert resp.status_code in (200, 500), f"Expected 200 or 500, got {resp.status_code}: {resp.text}"
+        # Used to accept 500: the unaliased CAST(mh.calc_date AS TEXT) is
+        # named "CAST(mh.calc_date AS TEXT)" by SQLite, so MarginResponse
+        # validation failed with "calc_date: Field required".
+        assert resp.status_code == 200, resp.text
+        assert resp.json() == [{
+            "product_id": product_id,
+            "product_name": "Margin Test",
+            "calc_date": "2026-01-01",
+            "b2c_margin_pct": 50.0,
+            "b2b_margin_pct": 40.0,
+            "b2c_price_tnd": 20.0,
+            "b2b_price_tnd": 15.0,
+            "cogs_tnd": 10.0,
+        }]
 
 
 # ─── Thresholds ─────────────────────────────────────────────────────
